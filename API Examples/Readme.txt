@@ -1,0 +1,1 @@
+This should contain examples (callouts) based on the API. Please use subfolders.

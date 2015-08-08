@@ -1,0 +1,1 @@
+This should contain generic information about the API, like guides for setting it up or extended documentation on certain features.
