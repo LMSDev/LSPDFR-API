@@ -186,7 +186,7 @@ namespace StraysCallouts.Callouts
     }
 
     /// <summary>
-    /// The mugging states
+    /// Mugging states
     /// </summary>
     public enum EMuggingState
     {
