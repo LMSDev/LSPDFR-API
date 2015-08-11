@@ -2,8 +2,6 @@ namespace alexguirre.Common.Extensions
 {
     using Rage;
     using Rage.Native;
-    using alexguirre.Common.Enum;
-    using alexguirre.Common.Extensions;
     using System.Drawing;
     using System;
 
