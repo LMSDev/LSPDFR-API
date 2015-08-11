@@ -75,7 +75,7 @@ namespace alexguirre.Common.Extensions
             return color = Color.FromArgb(red, green, blue);
         }
        
-
+        // Credit to Stealth22 for this function
         /// <summary>
         /// Gets the primary and secondary colors of this instance of Rage.Vehicle
         /// </summary>
