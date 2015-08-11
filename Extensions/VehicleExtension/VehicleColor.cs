@@ -5,7 +5,8 @@ namespace alexguirre.Common.Extensions
     using alexguirre.Common.Enum;
     using System.Drawing;
     using System;
-
+    
+    //Credit to Stealth22 for this struct
     /// <summary>
     /// Struct for vehicles primary and secondary colors
     /// </summary>
