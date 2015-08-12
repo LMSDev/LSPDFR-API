@@ -14,6 +14,14 @@ namespace Stealth.Examples.Callouts.Models.Callouts
 
     public abstract class CalloutBase : LSPD_First_Response.Mod.Callouts.Callout, ICalloutBase
     {
+        public CalloutBase()
+        {
+            State = Common.CalloutState.Created;
+            CalloutMessage = "";
+            ResponseType = Common.CallResponseType.Code_2;
+            Peds = new List<PedBase>();
+        }
+        
         public CalloutBase(string pCalloutMessage, Common.CallResponseType pResponseType = Common.CallResponseType.Code_2)
         {
             State = Common.CalloutState.Created;
@@ -108,12 +116,12 @@ namespace Stealth.Examples.Callouts.Models.Callouts
             }
         }
 
-        public override void OfficerDown()
+        public virtual void OfficerDown()
         {
             //code here
         }
 
-        public override void OnArrivalAtScene()
+        public virtual void OnArrivalAtScene()
         {
             DeleteBlip();
         }
@@ -165,12 +173,21 @@ namespace Stealth.Examples.Callouts.Models.Callouts
 			return (from x in Peds where x.Name == pName select x).FirstOrDefault();
 		}
 
+        public Vector3 GetRandomSpawnPoint(float pMin, float pMax)
+        {
+            return Vector3.Zero;
+        }
+
+        public void DeleteEntities()
+        {
+            throw new NotImplementedException();
+        }
+
         public Common.CallResponseType ResponseType { get; set; }
         public Vector3 SpawnPoint { get; set; }
-        public Common.CalloutState State { get; set; }
+        public new Common.CalloutState State { get; set; }
         public Blip CallBlip { get; set; }
         public List<PedBase> Peds { get; set; }
-
     }
 
 }

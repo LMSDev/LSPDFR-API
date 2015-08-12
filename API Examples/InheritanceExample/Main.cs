@@ -22,5 +22,10 @@ namespace Stealth.Examples.Callouts
                 //Code here
             }
         }
+
+        public override void Finally()
+        {
+            throw new NotImplementedException();
+        }
     }
 }
