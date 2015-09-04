@@ -1,8 +1,12 @@
-﻿using System.Drawing;
-using GTA;
-using GTA.Native;
+// Added by alexguirre
 
-namespace NativeUI
+using System.Drawing;
+// using GTA;
+// using GTA.Native;
+using Rage;
+using Rage.Native;
+
+namespace RAGENativeUI
 {
     /// <summary>
     /// A rectangle in 1080 pixels height system.
@@ -10,29 +14,32 @@ namespace NativeUI
     public class UIResRectangle : UIRectangle
     {
         public UIResRectangle()
-        { }
+        {
+        }
 
-        public UIResRectangle(Point pos, Size size) : base(pos, size)
-        { }
+        public UIResRectangle(Point position, Size size) : base(position, size)
+        { 
+        }
 
-        public UIResRectangle(Point pos, Size size, Color color) : base(pos, size, color)
-        { }
-        
+        public UIResRectangle(Point position, Size size, Color color) : base(position, size, color)
+        { 
+        }
+
         public override void Draw(Size offset)
         {
             if (!Enabled) return;
-            int screenw = Game.ScreenResolution.Width;
-            int screenh = Game.ScreenResolution.Height;
+            int screenw = Game.Resolution.Width;
+            int screenh = Game.Resolution.Height;
             const float height = 1080f;
             float ratio = (float)screenw / screenh;
             var width = height * ratio;
 
-            float w = Size.Width/width;
-            float h = Size.Height/height;
-            float x = ((Position.X + offset.Width)/width) + w*0.5f;
-            float y = ((Position.Y + offset.Height)/height) + h*0.5f;
+            float w = Size.Width / width;
+            float h = Size.Height / height;
+            float x = ((Position.X + offset.Width) / width) + w * 0.5f;
+            float y = ((Position.Y + offset.Height) / height) + h * 0.5f;
 
-            Function.Call(Hash.DRAW_RECT, x, y, w, h, Color.R, Color.G, Color.B, Color.A);
+            NativeFunction.CallByName<uint>("DRAW_RECT", x, y, w, h, (int)Color.R, (int)Color.G, (int)Color.B, (int)Color.A);
         }
     }
 }
