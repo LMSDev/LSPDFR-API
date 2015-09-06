@@ -6,22 +6,22 @@ using System.Drawing;
 using Rage;
 using Rage.Native;
 
-namespace RAGENativeUI
+namespace RAGENativeUI.Elements
 {
     /// <summary>
     /// A rectangle in 1080 pixels height system.
     /// </summary>
-    public class UIResRectangle : UIRectangle
+    public class ResRectangle : Rectangle
     {
-        public UIResRectangle()
+        public ResRectangle()
         {
         }
 
-        public UIResRectangle(Point position, Size size) : base(position, size)
+        public ResRectangle(Point position, Size size) : base(position, size)
         { 
         }
 
-        public UIResRectangle(Point position, Size size, Color color) : base(position, size, color)
+        public ResRectangle(Point position, Size size, Color color) : base(position, size, color)
         { 
         }
 

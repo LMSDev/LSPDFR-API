@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace NativeUI
+namespace RAGENativeUI
 {
     public static class StringMeasurer
     {

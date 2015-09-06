@@ -1,12 +1,13 @@
-﻿using GTA.Native;
+﻿using Rage.Native;
+using RAGENativeUI.Elements;
 
-namespace NativeUI
+namespace RAGENativeUI
 {
     public class InstructionalButton
     {
         public string Text { get; set; }
 
-        public UIMenuItem ItemBind { get; private set; }
+        public NativeMenuItem ItemBind { get; private set; }
 
         private readonly string _buttonString;
         private readonly GTA.Control _buttonControl;
@@ -25,7 +26,6 @@ namespace NativeUI
             _usingControls = true;
         }
 
-
         /// <summary>
         /// Adds a keyboard button to the instructional buttons array.
         /// </summary>
@@ -38,19 +38,18 @@ namespace NativeUI
             _usingControls = false;
         }
 
-
         /// <summary>
         /// Bind this button to an item, so it's only shown when that item is selected.
         /// </summary>
         /// <param name="item">Item to bind to.</param>
-        public void BindToItem(UIMenuItem item)
+        public void BindToItem(NativeMenuItem item)
         {
             ItemBind = item;
         }
 
         public string GetButtonId()
         {
-            return _usingControls ? Function.Call<string>(Hash._0x0499D7B09FC9B407, 2, (int) _buttonControl, 0) : "t_" + _buttonString;
+            return _usingControls ? NativeFunction.CallByHash<bool>(0x0499D7B09FC9B407, 2, (int) _buttonControl, 0) : "t_" + _buttonString;
         }
     }
 }

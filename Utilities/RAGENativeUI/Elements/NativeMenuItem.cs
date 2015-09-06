@@ -1,21 +1,21 @@
 ﻿using System;
 using System.Drawing;
 
-namespace NativeUI
+namespace RAGENativeUI.Elements
 {                
     /// <summary>
     /// Simple item with a label.
     /// </summary>
-    public class UIMenuItem
+    public class NativeMenuItem
     {
-        private readonly UIResRectangle _rectangle;
-        private readonly UIResText _text;
+        private readonly ResRectangle _rectangle;
+        private readonly ResText _text;
         private readonly Sprite _selectedSprite;
 
         private readonly Sprite _badgeLeft;
         private readonly Sprite _badgeRight;
 
-        private readonly UIResText _labelText;
+        private readonly ResText _labelText;
 
         /// <summary>
         /// Called when user selects the current item.
@@ -27,7 +27,7 @@ namespace NativeUI
         /// Basic menu button.
         /// </summary>
         /// <param name="text">Button label.</param>
-        public UIMenuItem(string text) : this(text, "")
+        public NativeMenuItem(string text) : this(text, "")
         {
         }
 
@@ -36,19 +36,19 @@ namespace NativeUI
         /// </summary>
         /// <param name="text">Button label.</param>
         /// <param name="description">Description.</param>
-        public UIMenuItem(string text, string description)
+        public NativeMenuItem(string text, string description)
         {
             Enabled = true;
 
-            _rectangle = new UIResRectangle(new Point(0, 0), new Size(431, 38), Color.FromArgb(150, 0, 0, 0));
-            _text = new UIResText(text, new Point(8, 0), 0.33f, Color.WhiteSmoke, GTA.Font.ChaletLondon, UIResText.Alignment.Left);
+            _rectangle = new ResRectangle(new Point(0, 0), new Size(431, 38), Color.FromArgb(150, 0, 0, 0));
+            _text = new ResText(text, new Point(8, 0), 0.33f, Color.WhiteSmoke, Common.EFont.ChaletLondon, ResText.Alignment.Left);
             Description = description;
             _selectedSprite = new Sprite("commonmenu", "gradient_nav", new Point(0, 0), new Size(431, 38));
 
             _badgeLeft = new Sprite("commonmenu", "", new Point(0, 0), new Size(40, 40));
             _badgeRight = new Sprite("commonmenu", "", new Point(0, 0), new Size(40, 40));
 
-            _labelText = new UIResText("", new Point(0, 0), 0.35f) {TextAlignment = UIResText.Alignment.Right};
+            _labelText = new ResText("", new Point(0, 0), 0.35f) {TextAlignment = ResText.Alignment.Right};
         }
 
 
@@ -77,7 +77,7 @@ namespace NativeUI
 
         internal virtual void ItemActivate(UIMenu sender)
         {
-            Activated?.Invoke(sender, this);
+            Activated.Invoke(sender, this);
         }
         
 

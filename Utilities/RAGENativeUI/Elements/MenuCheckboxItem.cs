@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Drawing;
 
-namespace NativeUI
-{          
-    public class UIMenuCheckboxItem : UIMenuItem
+namespace RAGENativeUI.Elements
+{
+    public class MenuCheckboxItem : NativeMenuItem
     {
         private readonly Sprite _checkedSprite;
         
@@ -17,7 +17,7 @@ namespace NativeUI
         /// </summary>
         /// <param name="text">Item label.</param>
         /// <param name="check">Boolean value whether the checkbox is checked.</param>
-        public UIMenuCheckboxItem(string text, bool check)
+        public MenuCheckboxItem(string text, bool check)
             : this(text, check, "")
         {
         }
@@ -28,7 +28,7 @@ namespace NativeUI
         /// <param name="text">Item label.</param>
         /// <param name="check">Boolean value whether the checkbox is checked.</param>
         /// <param name="description">Description for this item.</param>
-        public UIMenuCheckboxItem(string text, bool check, string description)
+        public MenuCheckboxItem(string text, bool check, string description)
             : base(text, description)
         {
             const int y = 0;
@@ -74,7 +74,7 @@ namespace NativeUI
 
         public void CheckboxEventTrigger()
         {
-            CheckboxEvent?.Invoke(this, Checked);
+            CheckboxEvent.Invoke(this, Checked);
         }
 
         public override void SetRightBadge(BadgeStyle badge)

@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
-using GTA;
-using Font = GTA.Font;
+//using GTA;
+//using Font = GTA.Font;
 
-namespace NativeUI
+namespace RAGENativeUI.Elements
 {
-    public class UIMenuListItem : UIMenuItem
+    public class MenuListItem : NativeMenuItem
     {
-        private readonly UIResText _itemText;
+        private readonly ResText _itemText;
 
         private readonly Sprite _arrowLeft;
         private readonly Sprite _arrowRight;
@@ -39,7 +39,7 @@ namespace NativeUI
         /// <param name="text">Item label.</param>
         /// <param name="items">List that contains your items.</param>
         /// <param name="index">Index in the list. If unsure user 0.</param>
-        public UIMenuListItem(string text, List<dynamic> items, int index)
+        public MenuListItem(string text, List<dynamic> items, int index)
             : this(text, items, index, "")
         {
         }
@@ -51,15 +51,15 @@ namespace NativeUI
         /// <param name="items">List that contains your items.</param>
         /// <param name="index">Index in the list. If unsure user 0.</param>
         /// <param name="description">Description for this item.</param>
-        public UIMenuListItem(string text, List<dynamic> items, int index, string description)
+        public MenuListItem(string text, List<dynamic> items, int index, string description)
             : base(text, description)
         {
             const int y = 0;
             _items = new List<dynamic>(items);
             _arrowLeft = new Sprite("commonmenu", "arrowleft", new Point(110, 105 + y), new Size(30, 30));
             _arrowRight = new Sprite("commonmenu", "arrowright", new Point(280, 105 + y), new Size(30, 30));
-            _itemText = new UIResText("", new Point(290, y + 104), 0.35f, Color.White, Font.ChaletLondon,
-                UIResText.Alignment.Left) {TextAlignment = UIResText.Alignment.Right};
+            _itemText = new ResText("", new Point(290, y + 104), 0.35f, Color.White, Common.EFont.ChaletLondon,
+                ResText.Alignment.Left) {TextAlignment = ResText.Alignment.Right};
             Index = index;
         }
 
@@ -131,7 +131,7 @@ namespace NativeUI
 
         internal virtual void ListChangedTrigger(int newindex)
         {
-            OnListChanged?.Invoke(this, newindex);
+            OnListChanged.Invoke(this, newindex);
         }
 
         public override void SetRightBadge(BadgeStyle badge)

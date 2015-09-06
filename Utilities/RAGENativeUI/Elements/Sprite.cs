@@ -2,10 +2,10 @@
 using System.Drawing;
 using System.IO;
 using System.Reflection;
-using GTA;
-using GTA.Native;
+using Rage;
+using Rage.Native;
 
-namespace NativeUI
+namespace RAGENativeUI.Elements
 {
     public class Sprite
     {
@@ -21,8 +21,8 @@ namespace NativeUI
             set
             {
                 _textureDict = value;
-                if(!Function.Call<bool>(Hash.HAS_STREAMED_TEXTURE_DICT_LOADED, value))
-                    Function.Call(Hash.REQUEST_STREAMED_TEXTURE_DICT, value, true);
+                if(!NativeFunction.CallByHash<bool>(Hash.HAS_STREAMED_TEXTURE_DICT_LOADED, value))
+                    NativeFunction.CallByHash<uint>(Hash.REQUEST_STREAMED_TEXTURE_DICT, value, true);
             }
         }
 
@@ -41,8 +41,8 @@ namespace NativeUI
         /// <param name="color"></param>
         public Sprite(string textureDict, string textureName, Point position, Size size, float heading, Color color) //BASE
         {
-            if (!Function.Call<bool>(Hash.HAS_STREAMED_TEXTURE_DICT_LOADED, textureDict))
-                Function.Call(Hash.REQUEST_STREAMED_TEXTURE_DICT, textureDict, true);
+            if (!NativeFunction.CallByHash<bool>(Hash.HAS_STREAMED_TEXTURE_DICT_LOADED, textureDict))
+                NativeFunction.CallByHash<uint>(Hash.REQUEST_STREAMED_TEXTURE_DICT, textureDict, true);
             TextureDict = textureDict;
             TextureName = textureName;
 
@@ -82,8 +82,8 @@ namespace NativeUI
             float h = (Size.Height / height);
             float x = (Position.X / width) + w * 0.5f;
             float y = (Position.Y / height) + h * 0.5f;
-            
-            Function.Call(Hash.DRAW_SPRITE, TextureDict, TextureName, x, y, w, h, Heading, Color.R, Color.G, Color.B, Color.A);
+
+            NativeFunction.CallByHash<uint>(Hash.DRAW_SPRITE, TextureDict, TextureName, x, y, w, h, Heading, Convert.ToInt32(Color.R), Convert.ToInt32(Color.G), Convert.ToInt32(Color.B), Convert.ToInt32(Color.A));
         }
 
 
