@@ -2,8 +2,9 @@
 using System.Linq;
 using System.Windows.Forms;
 using Control = GTA.Control;
+using RAGENativeUI.Elements;
 
-namespace NativeUI
+namespace RAGENativeUI
 {
     /// <summary>
     /// Helper class that handles all of your Menus. After instatiating it, you will have to add your menu by using the Add method.
@@ -141,7 +142,7 @@ namespace NativeUI
             _menuList.ForEach(m => m.SetBannerType(bannerType));
         }
 
-        public void SetBannerType(UIResRectangle bannerType)
+        public void SetBannerType(ResRectangle bannerType)
         {
             _menuList.ForEach(m => m.SetBannerType(bannerType));
         }
@@ -151,22 +152,22 @@ namespace NativeUI
             _menuList.ForEach(m => m.SetBannerType(bannerPath));
         }
 
-        public void SetKey(UIMenu.MenuControls menuControl, Control control)
+        public void SetKey(Common.MenuControls menuControl, Control control)
         {
             _menuList.ForEach(m => m.SetKey(menuControl, control));
         }
 
-        public void SetKey(UIMenu.MenuControls menuControl, Control control, int controllerIndex)
+        public void SetKey(Common.MenuControls menuControl, Control control, int controllerIndex)
         {
             _menuList.ForEach(m => m.SetKey(menuControl, control, controllerIndex));
         }
 
-        public void SetKey(UIMenu.MenuControls menuControl, Keys control)
+        public void SetKey(Common.MenuControls menuControl, Keys control)
         {
             _menuList.ForEach(m => m.SetKey(menuControl, control));
         }
 
-        public void ResetKey(UIMenu.MenuControls menuControl)
+        public void ResetKey(Common.MenuControls menuControl)
         {
             _menuList.ForEach(m => m.ResetKey(menuControl));
         }
