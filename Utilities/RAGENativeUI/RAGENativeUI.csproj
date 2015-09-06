@@ -84,6 +84,7 @@
     <Compile Include="Elements\MenuListItem.cs" />
     <Compile Include="Elements\ResRectangle.cs" />
     <Compile Include="Elements\ResText.cs" />
+    <Compile Include="Scaleform\Scaleform.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
