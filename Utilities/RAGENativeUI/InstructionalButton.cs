@@ -1,4 +1,5 @@
-﻿using Rage.Native;
+using Rage;
+using Rage.Native;
 using RAGENativeUI.Elements;
 
 namespace RAGENativeUI
@@ -10,16 +11,16 @@ namespace RAGENativeUI
         public NativeMenuItem ItemBind { get; private set; }
 
         private readonly string _buttonString;
-        private readonly GTA.Control _buttonControl;
+        private readonly GameControl _buttonControl;
         private readonly bool _usingControls;
 
         /// <summary>
         /// Add a dynamic button to the instructional buttons array.
         /// Changes whether the controller is being used and changes depending on keybinds.
         /// </summary>
-        /// <param name="control">GTA.Control that gets converted into a button.</param>
+        /// <param name="control">Rage.GameControl that gets converted into a button.</param>
         /// <param name="text">Help text that goes with the button.</param>
-        public InstructionalButton(GTA.Control control, string text)
+        public InstructionalButton(GameControl control, string text)
         {
             Text = text;
             _buttonControl = control;
@@ -49,7 +50,7 @@ namespace RAGENativeUI
 
         public string GetButtonId()
         {
-            return _usingControls ? NativeFunction.CallByHash<bool>(0x0499D7B09FC9B407, 2, (int) _buttonControl, 0) : "t_" + _buttonString;
+            return _usingControls ? (string)NativeFunction.CallByHash(0x0499D7B09FC9B407, typeof(string), 2, (int)_buttonControl, 0) : "t_" + _buttonString;
         }
     }
 }
