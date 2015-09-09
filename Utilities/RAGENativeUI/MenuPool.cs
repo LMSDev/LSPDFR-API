@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
-using Control = GTA.Control;
 using RAGENativeUI.Elements;
+using Rage;
 
 namespace RAGENativeUI
 {
@@ -152,12 +152,12 @@ namespace RAGENativeUI
             _menuList.ForEach(m => m.SetBannerType(bannerPath));
         }
 
-        public void SetKey(Common.MenuControls menuControl, Control control)
+        public void SetKey(Common.MenuControls menuControl, GameControl control)
         {
             _menuList.ForEach(m => m.SetKey(menuControl, control));
         }
 
-        public void SetKey(Common.MenuControls menuControl, Control control, int controllerIndex)
+        public void SetKey(Common.MenuControls menuControl, GameControl control, int controllerIndex)
         {
             _menuList.ForEach(m => m.SetKey(menuControl, control, controllerIndex));
         }
