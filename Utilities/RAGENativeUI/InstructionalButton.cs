@@ -50,7 +50,7 @@ namespace RAGENativeUI
 
         public string GetButtonId()
         {
-            return _usingControls ? (string)NativeFunction.CallByHash(0x0499D7B09FC9B407, typeof(string), 2, (int)_buttonControl, 0) : "t_" + _buttonString;
+            return _usingControls ? (string)NativeFunction.CallByHash(0x0499d7b09fc9b407, typeof(string), 2, (int)_buttonControl, 0) : "t_" + _buttonString;
         }
     }
 }
