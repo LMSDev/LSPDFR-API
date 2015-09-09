@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 
 namespace RAGENativeUI.Elements
@@ -20,7 +20,7 @@ namespace RAGENativeUI.Elements
         /// <summary>
         /// Called when user selects the current item.
         /// </summary>
-        public event ItemActivatedEvent Activated;
+        public event ItemActivatedEvent Activated = delegate { };
 
         
         /// <summary>
