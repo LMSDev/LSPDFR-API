@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.IO;
 using System.Reflection;
@@ -21,8 +21,8 @@ namespace RAGENativeUI.Elements
             set
             {
                 _textureDict = value;
-                if(!NativeFunction.CallByHash<bool>(Hash.HAS_STREAMED_TEXTURE_DICT_LOADED, value))
-                    NativeFunction.CallByHash<uint>(Hash.REQUEST_STREAMED_TEXTURE_DICT, value, true);
+                if(!NativeFunction.CallByName<bool>("HAS_STREAMED_TEXTURE_DICT_LOADED", value))
+                    NativeFunction.CallByName<uint>("REQUEST_STREAMED_TEXTURE_DICT", value, true);
             }
         }
 
@@ -41,8 +41,8 @@ namespace RAGENativeUI.Elements
         /// <param name="color"></param>
         public Sprite(string textureDict, string textureName, Point position, Size size, float heading, Color color) //BASE
         {
-            if (!NativeFunction.CallByHash<bool>(Hash.HAS_STREAMED_TEXTURE_DICT_LOADED, textureDict))
-                NativeFunction.CallByHash<uint>(Hash.REQUEST_STREAMED_TEXTURE_DICT, textureDict, true);
+            if (!NativeFunction.CallByName<bool>("HAS_STREAMED_TEXTURE_DICT_LOADED", textureDict))
+                NativeFunction.CallByName<uint>("REQUEST_STREAMED_TEXTURE_DICT", textureDict, true);
             TextureDict = textureDict;
             TextureName = textureName;
 
@@ -71,8 +71,8 @@ namespace RAGENativeUI.Elements
         public void Draw()
         {
             if (!Visible) return;
-            int screenw = Game.ScreenResolution.Width;
-            int screenh = Game.ScreenResolution.Height;
+            int screenw = Game.Resolution.Width;
+            int screenh = Game.Resolution.Height;
             const float height = 1080f;
             float ratio = (float)screenw/screenh;
             var width = height*ratio;
@@ -83,7 +83,7 @@ namespace RAGENativeUI.Elements
             float x = (Position.X / width) + w * 0.5f;
             float y = (Position.Y / height) + h * 0.5f;
 
-            NativeFunction.CallByHash<uint>(Hash.DRAW_SPRITE, TextureDict, TextureName, x, y, w, h, Heading, Convert.ToInt32(Color.R), Convert.ToInt32(Color.G), Convert.ToInt32(Color.B), Convert.ToInt32(Color.A));
+            NativeFunction.CallByName<uint>("DRAW_SPRITE", TextureDict, TextureName, x, y, w, h, Heading, Convert.ToInt32(Color.R), Convert.ToInt32(Color.G), Convert.ToInt32(Color.B), Convert.ToInt32(Color.A));
         }
 
 
@@ -95,26 +95,28 @@ namespace RAGENativeUI.Elements
         /// <param name="size"></param>
         public static void DrawTexture(string path, Point position, Size size)
         {
-            int screenw = Game.ScreenResolution.Width;
-            int screenh = Game.ScreenResolution.Height;
+            /*
+            int screenw = Game.Resolution.Width;
+            int screenh = Game.Resolution.Height;
             
             const float height = 1080f;
             float ratio = (float)screenw / screenh;
             float width = height * ratio;
             
-            float reduceX = UI.WIDTH / width;
-            float reduceY = UI.HEIGHT / height;
+            float reduceX = 1280 / width;
+            float reduceY = 720 / height;
 
             
             Point extra = new Point(0,0);
             if (screenw == 1914 && screenh == 1052) //TODO: Fix this when ScriptHookVDotNet 1.2 comes out.
                 extra = new Point(15, 0);
-
+            
             UI.DrawTexture(path, 1, 1, 60,
                 new Point(Convert.ToInt32(position.X*reduceX) + extra.X, Convert.ToInt32(position.Y*reduceY) + extra.Y),
                 new PointF(0f, 0f), 
                 new Size(Convert.ToInt32(size.Width * reduceX), Convert.ToInt32(size.Height * reduceY)),
                 0f, Color.White);
+            */
         }
 
         
