@@ -6,3 +6,5 @@ But at the very least, this is a starting point we can work from.
 [6-SEPT-2015] alexguirre - Created Scaleform class and updated Container.Draw().
 
 [7-SEPT-2015] alexguirre - Updated InstructionalButton class: changed GTA.Control to Rage.GameControl and fixed GetButtonId(). And moved Scaleform class to Elements namespace.
+
+[9-SEPT-2015] alexguirre - Updated most classes, working version.
