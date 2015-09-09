@@ -1,8 +1,6 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
-//using GTA;
-//using Font = GTA.Font;
 
 namespace RAGENativeUI.Elements
 {
@@ -19,7 +17,7 @@ namespace RAGENativeUI.Elements
         /// <summary>
         /// Triggered when the list is changed.
         /// </summary>
-        public event ItemListEvent OnListChanged;
+        public event ItemListEvent OnListChanged = delegate { };
 
         private int _index;
         
