@@ -1,5 +1,3 @@
-﻿//Added by LtFlash
-﻿//Edited by alexguirre: File renamed to UIElement, added UIElement interface, UIText inherits from UIElement interface, added UIRectangle and UIContainer
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -70,7 +68,7 @@ namespace RAGENativeUI.Elements
             NativeFunction.CallByName<uint>("SET_TEXT_COLOUR", (int)this.Color.R, (int)this.Color.G, (int)this.Color.B, (int)this.Color.A);
             NativeFunction.CallByName<uint>("SET_TEXT_CENTRE", this.Centered);
             NativeFunction.CallByHash<uint>(0x25fbb336df1804cb, "STRING"); // SetTextEntry native
-            NativeFunction.CallByHash<uint>(0x6c188be134e074aa, substr); // AddTextComponentString native
+            NativeFunction.CallByHash<uint>(0x6c188be134e074aa, this.Caption); // AddTextComponentString native
             NativeFunction.CallByHash<uint>(0xcd015e5bb0d96a57, x, y); // DrawText native
         }
     }
