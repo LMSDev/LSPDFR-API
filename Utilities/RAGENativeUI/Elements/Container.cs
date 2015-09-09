@@ -11,8 +11,7 @@ namespace RAGENativeUI.Elements
 {
     public class Container : Rectangle
     {
-        //private List<IElement> _mItems = new List<IElement>();
-        public List<IElement> Items = new List<IElement>(); /*{ get { return this._mItems; } set { this._mItems = value; } }*/
+        public List<IElement> Items = new List<IElement>();
 
         public Container()
             : base()
