@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 
 namespace RAGENativeUI.Elements
@@ -10,7 +10,7 @@ namespace RAGENativeUI.Elements
         /// <summary>
         /// Triggered when the checkbox state is changed.
         /// </summary>
-        public event ItemCheckboxEvent CheckboxEvent;
+        public event ItemCheckboxEvent CheckboxEvent = delegate { };
 
         /// <summary>
         /// Checkbox item with a toggleable checkbox.
