@@ -1,8 +1,9 @@
-﻿/*
-*
+/*
 *
 * Created by: Guad, CamxxCore, jedijosh920
 *
+*
+* Ported by: alexguirre, Stealth22, LtFlash
 *
 */
 
@@ -11,18 +12,16 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-//using System.Windows.Forms;
+using System.Windows.Forms;
 using Rage;
 using Rage.Native;
-//using Control = GTA.Control;
-//using Font = GTA.Font;
 using RAGENativeUI.Elements;
 
 namespace RAGENativeUI
 {
     public delegate void IndexChangedEvent(UIMenu sender, int newIndex);
 
-    public delegate void ListChangedEvent(UIMenu sender, NativeMenuItem listItem, int newIndex);
+    public delegate void ListChangedEvent(UIMenu sender, MenuListItem listItem, int newIndex);
 
     public delegate void CheckboxChangeEvent(UIMenu sender, MenuCheckboxItem checkboxItem, bool Checked);
 
@@ -94,38 +93,38 @@ namespace RAGENativeUI
         /// <summary>
         /// Called when user presses up or down, changing current selection.
         /// </summary>
-        public event IndexChangedEvent OnIndexChange;
+        public event IndexChangedEvent OnIndexChange = delegate { };
 
         /// <summary>
         /// Called when user presses left or right, changing a list position.
         /// </summary>
-        public event ListChangedEvent OnListChange;
+        public event ListChangedEvent OnListChange = delegate { };
 
         /// <summary>
         /// Called when user presses enter on a checkbox item.
         /// </summary>
-        public event CheckboxChangeEvent OnCheckboxChange;
+        public event CheckboxChangeEvent OnCheckboxChange = delegate { };
 
         /// <summary>
         /// Called when user selects a simple item.
         /// </summary>
-        public event ItemSelectEvent OnItemSelect;
+        public event ItemSelectEvent OnItemSelect = delegate { };
 
         /// <summary>
         /// Called when user closes the menu or goes back in a menu chain.
         /// </summary>
-        public event MenuCloseEvent OnMenuClose;
+        public event MenuCloseEvent OnMenuClose = delegate { };
 
         /// <summary>
         /// Called when user either clicks on a binded button or goes back to a parent menu.
         /// </summary>
-        public event MenuChangeEvent OnMenuChange;
+        public event MenuChangeEvent OnMenuChange = delegate { };
 
         //Keys
-        private readonly Dictionary<Common.MenuControls, Tuple<List<Keys>, List<Tuple<Control, int>>>> _keyDictionary = new Dictionary<Common.MenuControls, Tuple<List<Keys>, List<Tuple<Control, int>>>> ();
+        private readonly Dictionary<Common.MenuControls, Tuple<List<Keys>, List<Tuple<GameControl, int>>>> _keyDictionary = new Dictionary<Common.MenuControls, Tuple<List<Keys>, List<Tuple<GameControl, int>>>>();
                          
         //Tree structure
-        public Dictionary<NativeMenuItem, UIMenu> Children { get; }
+        public Dictionary<NativeMenuItem, UIMenu> Children { get; private set; }
         
         /// <summary>
         /// Basic Menu constructor.
@@ -178,7 +177,7 @@ namespace RAGENativeUI
 
             _mainMenu = new Container(new Point(0, 0), new Size(700, 500), Color.FromArgb(0, 0, 0, 0));
             _logo = new Sprite(spriteLibrary, spriteName, new Point(0 + _offset.X, 0 + _offset.Y), new Size(431, 107));
-            _mainMenu.Items.Add(Title = new ResText(title, new Point(215 + _offset.X, 20 + _offset.Y), 1.15f, Color.White, Font.HouseScript, ResText.Alignment.Centered));
+            _mainMenu.Items.Add(Title = new ResText(title, new Point(215 + _offset.X, 20 + _offset.Y), 1.15f, Color.White, Common.EFont.HouseScript, ResText.Alignment.Centered));
             if (!String.IsNullOrWhiteSpace(subtitle))
             {
                 _mainMenu.Items.Add(new ResRectangle(new Point(0 + offset.X, 107 + _offset.Y), new Size(431, 37), Color.Black));
@@ -198,22 +197,22 @@ namespace RAGENativeUI
 
             _descriptionBar = new ResRectangle(new Point(_offset.X, 123), new Size(431, 4), Color.Black);
             _descriptionRectangle = new Sprite("commonmenu", "gradient_bgd", new Point(_offset.X, 127), new Size(431, 30));
-            _descriptionText = new ResText("Description", new Point(_offset.X + 5, 125), 0.35f, Color.FromArgb(255, 255, 255, 255), Font.ChaletLondon, ResText.Alignment.Left);
+            _descriptionText = new ResText("Description", new Point(_offset.X + 5, 125), 0.35f, Color.FromArgb(255, 255, 255, 255), Common.EFont.ChaletLondon, ResText.Alignment.Left);
 
             _background = new Sprite("commonmenu", "gradient_bgd", new Point(_offset.X, 144 + _offset.Y - 37 + _extraYOffset), new Size(290, 25));
-            
-            SetKey(Common.MenuControls.Up, Control.PhoneUp);
-            SetKey(Common.MenuControls.Up, Control.CursorScrollUp);
 
-            SetKey(Common.MenuControls.Down, Control.PhoneDown);
-            SetKey(Common.MenuControls.Down, Control.CursorScrollDown);
+            SetKey(Common.MenuControls.Up, GameControl.CellphoneUp);
+            SetKey(Common.MenuControls.Up, GameControl.CursorScrollUp);
 
-            SetKey(Common.MenuControls.Left, Control.PhoneLeft);
-            SetKey(Common.MenuControls.Right, Control.PhoneRight);
-            SetKey(Common.MenuControls.Select, Control.FrontendAccept);
+            SetKey(Common.MenuControls.Down, GameControl.CellphoneDown);
+            SetKey(Common.MenuControls.Down, GameControl.CursorScrollDown);
 
-            SetKey(Common.MenuControls.Back, Control.PhoneCancel);
-            SetKey(Common.MenuControls.Back, Control.FrontendPause);
+            SetKey(Common.MenuControls.Left, GameControl.CellphoneLeft);
+            SetKey(Common.MenuControls.Right, GameControl.CellphoneRight);
+            SetKey(Common.MenuControls.Select, GameControl.FrontendAccept);
+
+            SetKey(Common.MenuControls.Back, GameControl.CellphoneCancel);
+            SetKey(Common.MenuControls.Back, GameControl.FrontendPause);
         }
 
         private void RecaulculateDescriptionPosition()
@@ -227,7 +226,7 @@ namespace RAGENativeUI
             _descriptionBar.Size = new Size(431 + WidthOffset, 4);
             _descriptionRectangle.Size = new Size(431 + WidthOffset, 30);
 
-            int count = Size;
+            int count = MenuItems.Count;
             if (count > MaxItemsOnScreen + 1)
                 count = MaxItemsOnScreen + 2;
 
@@ -268,12 +267,12 @@ namespace RAGENativeUI
         /// <param name="enable"></param>
         public static void DisEnableControls(bool enable)
         {
-            Hash thehash = enable ? Hash.ENABLE_CONTROL_ACTION : Hash.DISABLE_CONTROL_ACTION;
-            foreach (var con in Enum.GetValues(typeof(Control)))
+            string thehash = enable ? "ENABLE_CONTROL_ACTION" : "DISABLE_CONTROL_ACTION";
+            foreach (var con in Enum.GetValues(typeof(GameControl)))
             {
-                NativeFunction.CallByHash<uint>(thehash, 0, (int)con);
-                NativeFunction.CallByHash<uint>(thehash, 1, (int)con);
-                NativeFunction.CallByHash<uint>(thehash, 2, (int)con);
+                NativeFunction.CallByName<uint>(thehash, 0, (int)con);
+                NativeFunction.CallByName<uint>(thehash, 1, (int)con);
+                NativeFunction.CallByName<uint>(thehash, 2, (int)con);
             }
             //Controls we want
             // -Frontend
@@ -282,51 +281,51 @@ namespace RAGENativeUI
             // -
 
             if (enable) return;
-            var list = new List<Control>
+            var list = new List<GameControl>
             {
-                Control.FrontendAccept,
-                Control.FrontendAxisX,
-                Control.FrontendAxisY,
-                Control.FrontendDown,
-                Control.FrontendUp,
-                Control.FrontendLeft,
-                Control.FrontendRight,
-                Control.FrontendCancel,
-                Control.FrontendSelect,
-                Control.CursorScrollDown,
-                Control.CursorScrollUp,
-                Control.CursorX,
-                Control.CursorY,
-                Control.MoveUpDown,
-                Control.MoveLeftRight,
-                Control.Sprint,
-                Control.Jump,
-                Control.Enter,
-                Control.VehicleExit,
-                Control.VehicleAccelerate,
-                Control.VehicleBrake,
-                Control.VehicleMoveLeftRight,
-                Control.VehicleFlyYawLeft,
-                Control.FlyLeftRight,
-                Control.FlyUpDown,
-                Control.VehicleFlyYawRight,
-                Control.VehicleHandbrake,
+                GameControl.FrontendAccept,
+                GameControl.FrontendAxisX,
+                GameControl.FrontendAxisY,
+                GameControl.FrontendDown,
+                GameControl.FrontendUp,
+                GameControl.FrontendLeft,
+                GameControl.FrontendRight,
+                GameControl.FrontendCancel,
+                GameControl.FrontendSelect,
+                GameControl.CursorScrollDown,
+                GameControl.CursorScrollUp,
+                GameControl.CursorX,
+                GameControl.CursorY,
+                GameControl.MoveUpDown,
+                GameControl.MoveLeftRight,
+                GameControl.Sprint,
+                GameControl.Jump,
+                GameControl.Enter,
+                GameControl.VehicleExit,
+                GameControl.VehicleAccelerate,
+                GameControl.VehicleBrake,
+                GameControl.VehicleMoveLeftRight,
+                GameControl.VehicleFlyYawLeft,
+                GameControl.ScriptedFlyLeftRight,
+                GameControl.ScriptedFlyUpDown,
+                GameControl.VehicleFlyYawRight,
+                GameControl.VehicleHandbrake,
             };
 
             if (IsUsingController)
             {
-                list.AddRange(new Control[]
+                list.AddRange(new GameControl[]
                 {
-                    Control.LookUpDown,
-                    Control.LookLeftRight,
-                    Control.Aim,
-                    Control.Attack,
+                    GameControl.LookUpDown,
+                    GameControl.LookLeftRight,
+                    GameControl.Aim,
+                    GameControl.Attack,
                 });   
             }
 
             foreach (var control in list)
             {
-                NativeFunction.CallByHash<uint>(Hash.ENABLE_CONTROL_ACTION, 0, (int)control);
+                NativeFunction.CallByName<uint>("ENABLE_CONTROL_ACTION", 0, (int)control);
             }
         }
                
@@ -393,7 +392,7 @@ namespace RAGENativeUI
         /// <param name="index">Index to remove the item at.</param>
         public void RemoveItemAt(int index)
         {
-            if (Size > MaxItemsOnScreen && _maxItem == Size - 1)
+            if (MenuItems.Count > MaxItemsOnScreen && _maxItem == MenuItems.Count - 1)
             {
                 _maxItem--;
                 _minItem--;
@@ -442,8 +441,8 @@ namespace RAGENativeUI
             if(_buttonsEnabled)
                 _instructionalButtonsScaleform.Render2D();
             
-            NativeFunction.CallByHash<uint>(0xB8A850F20A067EB6, 76, 84);           // Safezone
-            NativeFunction.CallByHash<uint>(0xF5A2C681787E579D, 0f, 0f, 0f, 0f);   // stuff
+            NativeFunction.CallByHash<uint>(0xb8a850f20a067eb6, 76, 84);           // Safezone
+            NativeFunction.CallByHash<uint>(0xf5a2c681787e579d, 0f, 0f, 0f, 0f);   // stuff
 
 
             if (String.IsNullOrWhiteSpace(_customBanner))
@@ -463,11 +462,11 @@ namespace RAGENativeUI
             _mainMenu.Draw();
             if (MenuItems.Count == 0)
             {
-                NativeFunction.CallByHash<uint>(0xE3A3DB414A373DAB); // Safezone end
+                NativeFunction.CallByHash<uint>(0xe3a3db414a373dab); // Safezone end
                 return;
             }
 
-            _background.Size = Size > MaxItemsOnScreen + 1 ? new Size(431 + WidthOffset, 38*(MaxItemsOnScreen + 1)) : new Size(431 + WidthOffset, 38 * Size);
+            _background.Size = MenuItems.Count > MaxItemsOnScreen + 1 ? new Size(431 + WidthOffset, 38 * (MaxItemsOnScreen + 1)) : new Size(431 + WidthOffset, 38 * MenuItems.Count);
             _background.Draw();
             MenuItems[_activeItem % (MenuItems.Count)].Selected = true;
             if (!String.IsNullOrWhiteSpace(MenuItems[_activeItem%(MenuItems.Count)].Description))
@@ -516,12 +515,12 @@ namespace RAGENativeUI
                 _upAndDownSprite.Draw();
                 if (_counterText != null)
                 {
-                    string cap = (CurrentSelection + 1) + " / " + Size;
+                    string cap = (CurrentSelection + 1) + " / " + MenuItems.Count;
                     _counterText.Caption = CounterPretext + cap;
                     _counterText.Draw();
                 }
             }
-            NativeFunction.CallByHash<uint>(0xE3A3DB414A373DAB); // Safezone end
+            NativeFunction.CallByHash<uint>(0xe3a3db414a373dab); // Safezone end
         }
 
         /// <summary>
@@ -530,8 +529,8 @@ namespace RAGENativeUI
         /// <returns></returns>
         public static SizeF GetScreenResolutionMantainRatio()
         {
-            int screenw = Game.ScreenResolution.Width;
-            int screenh = Game.ScreenResolution.Height;
+            int screenw = Game.Resolution.Width;
+            int screenh = Game.Resolution.Height;
             const float height = 1080f;
             float ratio = (float)screenw / screenh;
             var width = height * ratio;
@@ -549,8 +548,8 @@ namespace RAGENativeUI
         {
             var res = GetScreenResolutionMantainRatio();
 
-            int mouseX = Convert.ToInt32(Math.Round(NativeFunction.CallByHash<float>(Hash.GET_CONTROL_NORMAL, 0, (int)Control.CursorX) * res.Width));
-            int mouseY = Convert.ToInt32(Math.Round(NativeFunction.CallByHash<float>(Hash.GET_CONTROL_NORMAL, 0, (int)Control.CursorY) * res.Height));
+            int mouseX = Convert.ToInt32(Math.Round(NativeFunction.CallByName<float>("GET_CONTROL_NORMAL", 0, (int)GameControl.CursorX) * res.Width));
+            int mouseY = Convert.ToInt32(Math.Round(NativeFunction.CallByName<float>("GET_CONTROL_NORMAL", 0, (int)GameControl.CursorY) * res.Height));
 
             return (mouseX >= topLeft.X && mouseX <= topLeft.X + boxSize.Width)
                    && (mouseY > topLeft.Y && mouseY < topLeft.Y + boxSize.Height);
@@ -565,7 +564,7 @@ namespace RAGENativeUI
         /// <returns>0 - Not in item at all, 1 - In label, 2 - In arrow space.</returns>
         public int IsMouseInListItemArrows(MenuListItem item, Point topLeft, Point safezone) // TODO: Ability to scroll left and right
         {
-            NativeFunction.CallByHash<uint>(0x54CE8AC98E120CAB, "jamyfafi");
+            NativeFunction.CallByHash<uint>(0x54ce8ac98e120cab, "jamyfafi");
             ResText.AddLongString(item.Text);
             var res = GetScreenResolutionMantainRatio();
             var screenw = res.Width;
@@ -573,7 +572,7 @@ namespace RAGENativeUI
             const float height = 1080f;
             float ratio = screenw / screenh;
             var width = height * ratio;
-            int labelSize = Convert.ToInt32(NativeFunction.CallByHash<float>(0x85F061DA64ED2F67, 0) * width * 0.35f);
+            int labelSize = Convert.ToInt32(NativeFunction.CallByHash<float>(0x85f061da64ed2f67, 0) * width * 0.35f);
 
             int labelSizeX = 5 + labelSize + 10;
             int arrowSizeX = 431 - labelSizeX;
@@ -589,14 +588,14 @@ namespace RAGENativeUI
         /// <returns></returns>
         public static Point GetSafezoneBounds()
         {
-            float t = NativeFunction.CallByHash<float>((Hash)0xBAF107B6BB2C97F0); // Safezone size.
+            float t = NativeFunction.CallByHash<float>(0xbaf107b6bb2c97f0); // Safezone size.
             double g = Math.Round(Convert.ToDouble(t), 2);
             g = (g * 100) - 90;
             g = 10 - g;
 
             const float hmp = 5.4f;
-            int screenw = Game.ScreenResolution.Width;
-            int screenh = Game.ScreenResolution.Height;
+            int screenw = Game.Resolution.Width;
+            int screenh = Game.Resolution.Height;
             float ratio = (float)screenw / screenh;
             float wmp = ratio*hmp;
             
@@ -608,7 +607,7 @@ namespace RAGENativeUI
         /// </summary>
         public void GoUpOverflow()
         {
-            if (Size <= MaxItemsOnScreen + 1) return;
+            if (MenuItems.Count <= MaxItemsOnScreen + 1) return;
             if (_activeItem % MenuItems.Count <= _minItem)
             {
                 if (_activeItem % MenuItems.Count == 0)
@@ -635,7 +634,7 @@ namespace RAGENativeUI
                 _activeItem--;
                 MenuItems[_activeItem % (MenuItems.Count)].Selected = true;
             }
-            Game.PlaySound(AUDIO_UPDOWN, AUDIO_LIBRARY);
+            Common.PlaySound(AUDIO_UPDOWN, AUDIO_LIBRARY);
             IndexChange(CurrentSelection);
         }
 
@@ -644,11 +643,11 @@ namespace RAGENativeUI
         /// </summary>
         public void GoUp()
         {
-            if (Size > MaxItemsOnScreen + 1) return;
+            if (MenuItems.Count > MaxItemsOnScreen + 1) return;
             MenuItems[_activeItem % (MenuItems.Count)].Selected = false;
             _activeItem--;
             MenuItems[_activeItem % (MenuItems.Count)].Selected = true;
-            Game.PlaySound(AUDIO_UPDOWN, AUDIO_LIBRARY);
+            Common.PlaySound(AUDIO_UPDOWN, AUDIO_LIBRARY);
             IndexChange(CurrentSelection);
         }
 
@@ -657,7 +656,7 @@ namespace RAGENativeUI
         /// </summary>
         public void GoDownOverflow()
         {
-            if (Size <= MaxItemsOnScreen + 1) return;
+            if (MenuItems.Count <= MaxItemsOnScreen + 1) return;
             if (_activeItem % MenuItems.Count >= _maxItem)
             {
                 if (_activeItem % MenuItems.Count == MenuItems.Count - 1)
@@ -683,7 +682,7 @@ namespace RAGENativeUI
                 _activeItem++;
                 MenuItems[_activeItem % (MenuItems.Count)].Selected = true;
             }
-            Game.PlaySound(AUDIO_UPDOWN, AUDIO_LIBRARY);
+            Common.PlaySound(AUDIO_UPDOWN, AUDIO_LIBRARY);
             IndexChange(CurrentSelection);
         }
 
@@ -692,11 +691,11 @@ namespace RAGENativeUI
         /// </summary>
         public void GoDown()
         {
-            if (Size > MaxItemsOnScreen + 1) return;
+            if (MenuItems.Count > MaxItemsOnScreen + 1) return;
             MenuItems[_activeItem % (MenuItems.Count)].Selected = false;
             _activeItem++;
             MenuItems[_activeItem % (MenuItems.Count)].Selected = true;
-            Game.PlaySound(AUDIO_UPDOWN, AUDIO_LIBRARY);
+            Common.PlaySound(AUDIO_UPDOWN, AUDIO_LIBRARY);
             IndexChange(CurrentSelection);
         }
 
@@ -708,7 +707,7 @@ namespace RAGENativeUI
             if (!(MenuItems[CurrentSelection] is MenuListItem)) return;
             var it = (MenuListItem)MenuItems[CurrentSelection];
             it.Index--;
-            Game.PlaySound(AUDIO_LEFTRIGHT, AUDIO_LIBRARY);
+            Common.PlaySound(AUDIO_LEFTRIGHT, AUDIO_LIBRARY);
             ListChange(it, it.Index);
             it.ListChangedTrigger(it.Index);
         }
@@ -721,7 +720,7 @@ namespace RAGENativeUI
             if (!(MenuItems[CurrentSelection] is MenuListItem)) return;
             var it = (MenuListItem)MenuItems[CurrentSelection];
             it.Index++;
-            Game.PlaySound(AUDIO_LEFTRIGHT, AUDIO_LIBRARY);
+            Common.PlaySound(AUDIO_LEFTRIGHT, AUDIO_LIBRARY);
             ListChange(it, it.Index);
             it.ListChangedTrigger(it.Index);
         }
@@ -733,20 +732,20 @@ namespace RAGENativeUI
         {
             if (!MenuItems[CurrentSelection].Enabled)
             {
-                Game.PlaySound(AUDIO_ERROR, AUDIO_LIBRARY);
+                Common.PlaySound(AUDIO_ERROR, AUDIO_LIBRARY);
                 return;
             }
             if (MenuItems[CurrentSelection] is MenuCheckboxItem)
             {
                 var it = (MenuCheckboxItem)MenuItems[CurrentSelection];
                 it.Checked = !it.Checked;
-                Game.PlaySound(AUDIO_SELECT, AUDIO_LIBRARY);
+                Common.PlaySound(AUDIO_SELECT, AUDIO_LIBRARY);
                 CheckboxChange(it, it.Checked);
                 it.CheckboxEventTrigger();
             }
             else
             {
-                Game.PlaySound(AUDIO_SELECT, AUDIO_LIBRARY);
+                Common.PlaySound(AUDIO_SELECT, AUDIO_LIBRARY);
                 ItemSelect(MenuItems[CurrentSelection], CurrentSelection);
                 MenuItems[CurrentSelection].ItemActivate(this);
                 if (!Children.ContainsKey(MenuItems[CurrentSelection])) return;
@@ -761,7 +760,7 @@ namespace RAGENativeUI
         /// </summary>
         public void GoBack()
         {
-            Game.PlaySound(AUDIO_BACK, AUDIO_LIBRARY);
+            Common.PlaySound(AUDIO_BACK, AUDIO_LIBRARY);
             Visible = false;
             if (ParentMenu != null)
             {
@@ -808,16 +807,16 @@ namespace RAGENativeUI
         {
             if (!Visible || _justOpened || MenuItems.Count == 0 || IsUsingController || !MouseControlsEnabled)
             {
-                NativeFunction.CallByHash<uint>(Hash.ENABLE_CONTROL_ACTION, (int)Control.LookUpDown);
-                NativeFunction.CallByHash<uint>(Hash.ENABLE_CONTROL_ACTION, (int)Control.LookLeftRight);
-                NativeFunction.CallByHash<uint>(Hash.ENABLE_CONTROL_ACTION, (int)Control.Aim);
-                NativeFunction.CallByHash<uint>(Hash.ENABLE_CONTROL_ACTION, (int)Control.Attack);
+                NativeFunction.CallByName<uint>("ENABLE_CONTROL_ACTION", (int)GameControl.LookUpDown);
+                NativeFunction.CallByName<uint>("ENABLE_CONTROL_ACTION", (int)GameControl.LookLeftRight);
+                NativeFunction.CallByName<uint>("ENABLE_CONTROL_ACTION", (int)GameControl.Aim);
+                NativeFunction.CallByName<uint>("ENABLE_CONTROL_ACTION", (int)GameControl.Attack);
                 MenuItems.Where(i => i.Hovered).ToList().ForEach(i => i.Hovered = false);
                 return;
             }
 
             Point safezoneOffset = GetSafezoneBounds();
-            NativeFunction.CallByHash<uint>(Hash._SHOW_CURSOR_THIS_FRAME);
+            NativeFunction.CallByHash<uint>(0xaae7ce1d63167423);  // _SHOW_CURSOR_THIS_FRAME
             int limit = MenuItems.Count - 1;
             int counter = 0;
             if (MenuItems.Count > MaxItemsOnScreen + 1)
@@ -825,17 +824,19 @@ namespace RAGENativeUI
 
             if (IsMouseInBounds(new Point(0, 0), new Size(30, 1080)) && MouseEdgeEnabled)
             {
-                GameplayCamera.RelativeHeading += 5f;
-                NativeFunction.CallByHash<uint>(0x8DB8CFFD58B62552, 6);
+                //Camera.RenderingCamera.SetRotationRoll(Camera.RenderingCamera.Rotation.Roll + 5f);
+                NativeFunction.CallByName<uint>("SET_GAMEPLAY_CAM_RELATIVE_HEADING", NativeFunction.CallByName<float>("GET_GAMEPLAY_CAM_RELATIVE_HEADING") + 5.0f);
+                NativeFunction.CallByHash<uint>(0x8db8cffd58b62552, 6);
             }
             else if (IsMouseInBounds(new Point(Convert.ToInt32(GetScreenResolutionMantainRatio().Width - 30f), 0), new Size(30, 1080)) &&  MouseEdgeEnabled)
             {
-                GameplayCamera.RelativeHeading -= 5f;
-                NativeFunction.CallByHash<uint>(0x8DB8CFFD58B62552, 7);
+                //Camera.RenderingCamera.SetRotationRoll(Camera.RenderingCamera.Rotation.Roll - 5f);
+                NativeFunction.CallByName<uint>("SET_GAMEPLAY_CAM_RELATIVE_HEADING", NativeFunction.CallByName<float>("GET_GAMEPLAY_CAM_RELATIVE_HEADING") - 5.0f);
+                NativeFunction.CallByHash<uint>(0x8db8cffd58b62552, 7);
             }
             else if(MouseEdgeEnabled)
             {
-                NativeFunction.CallByHash<uint>(0x8DB8CFFD58B62552, 1);
+                NativeFunction.CallByHash<uint>(0x8db8cffd58b62552, 1);
             }
 
             for (int i = _minItem; i <= limit; i++)
@@ -848,7 +849,7 @@ namespace RAGENativeUI
                 if (IsMouseInBounds(new Point(xpos, ypos), new Size(xsize, ysize)))
                 {
                     uiMenuItem.Hovered = true;
-                    if (Game.IsControlJustPressed(0, Control.Attack))
+                    if (Game.IsControlJustPressed(0, GameControl.Attack) || Common.IsDisabledControlJustPressed(0, GameControl.Attack))
                         if (uiMenuItem.Selected && uiMenuItem.Enabled)
                         {
                             if (MenuItems[i] is MenuListItem &&
@@ -860,14 +861,14 @@ namespace RAGENativeUI
                                 switch (res)
                                 {
                                     case 1:
-                                        Game.PlaySound(AUDIO_SELECT, AUDIO_LIBRARY);
+                                        Common.PlaySound(AUDIO_SELECT, AUDIO_LIBRARY);
                                         MenuItems[i].ItemActivate(this);
                                         ItemSelect(MenuItems[i], i);
                                         break;
                                     case 2:
                                         var it = (MenuListItem) MenuItems[i];
                                         it.Index++;
-                                        Game.PlaySound(AUDIO_LEFTRIGHT, AUDIO_LIBRARY);
+                                        Common.PlaySound(AUDIO_LEFTRIGHT, AUDIO_LIBRARY);
                                         ListChange(it, it.Index);
                                         it.ListChangedTrigger(it.Index);
                                         break;
@@ -879,13 +880,13 @@ namespace RAGENativeUI
                         else if(!uiMenuItem.Selected)
                         {
                             CurrentSelection = i;
-                            Game.PlaySound(AUDIO_UPDOWN, AUDIO_LIBRARY);
+                            Common.PlaySound(AUDIO_UPDOWN, AUDIO_LIBRARY);
                             IndexChange(CurrentSelection);
                             UpdateScaleform();
                         }
                         else if (!uiMenuItem.Enabled && uiMenuItem.Selected)
                         {
-                            Game.PlaySound(AUDIO_ERROR, AUDIO_LIBRARY);
+                            Common.PlaySound(AUDIO_ERROR, AUDIO_LIBRARY);
                         }
                 }
                 else
@@ -894,13 +895,13 @@ namespace RAGENativeUI
             }
             int extraY = 144 + 38*(MaxItemsOnScreen + 1) + _offset.Y - 37 + _extraYOffset + safezoneOffset.Y;
             int extraX = safezoneOffset.X + _offset.X;
-            if(Size <= MaxItemsOnScreen + 1) return;
+            if (MenuItems.Count <= MaxItemsOnScreen + 1) return;
             if (IsMouseInBounds(new Point(extraX, extraY), new Size(431 + WidthOffset, 18)))
             {
                 _extraRectangleUp.Color = Color.FromArgb(255, 30, 30, 30);
-                if (Game.IsControlJustPressed(0, Control.Attack))
+                if (Game.IsControlJustPressed(0, GameControl.Attack) || Common.IsDisabledControlJustPressed(0, GameControl.Attack))
                 {
-                    if(Size > MaxItemsOnScreen+1)
+                    if (MenuItems.Count > MaxItemsOnScreen + 1)
                         GoUpOverflow();
                     else
                         GoUp();
@@ -912,9 +913,9 @@ namespace RAGENativeUI
             if (IsMouseInBounds(new Point(extraX, extraY+18), new Size(431 + WidthOffset, 18)))
             {
                 _extraRectangleDown.Color = Color.FromArgb(255, 30, 30, 30);
-                if (Game.IsControlJustPressed(0, Control.Attack))
+                if (Game.IsControlJustPressed(0, GameControl.Attack) || Common.IsDisabledControlJustPressed(0, GameControl.Attack))
                 {
-                    if (Size > MaxItemsOnScreen + 1)
+                    if (MenuItems.Count > MaxItemsOnScreen + 1)
                         GoDownOverflow();
                     else
                         GoDown();
@@ -936,7 +937,7 @@ namespace RAGENativeUI
             else
             {
                 _keyDictionary.Add(control,
-                    new Tuple<List<Keys>, List<Tuple<Control, int>>>(new List<Keys>(), new List<Tuple<Control, int>>()));
+                    new Tuple<List<Keys>, List<Tuple<GameControl, int>>>(new List<Keys>(), new List<Tuple<GameControl, int>>()));
                 _keyDictionary[control].Item1.Add(keyToSet);
             }
         }
@@ -946,7 +947,7 @@ namespace RAGENativeUI
         /// </summary>
         /// <param name="control"></param>
         /// <param name="gtaControl"></param>
-        public void SetKey(Common.MenuControls control, Control gtaControl)
+        public void SetKey(Common.MenuControls control, GameControl gtaControl)
         {
             SetKey(control, gtaControl, 0);
             SetKey(control, gtaControl, 1);
@@ -959,15 +960,15 @@ namespace RAGENativeUI
         /// <param name="control"></param>
         /// <param name="gtaControl"></param>
         /// <param name="controlIndex"></param>
-        public void SetKey(Common.MenuControls control, Control gtaControl, int controlIndex)
+        public void SetKey(Common.MenuControls control, GameControl gtaControl, int controlIndex)
         {
             if (_keyDictionary.ContainsKey(control))
-                _keyDictionary[control].Item2.Add(new Tuple<Control, int>(gtaControl, controlIndex));
+                _keyDictionary[control].Item2.Add(new Tuple<GameControl, int>(gtaControl, controlIndex));
             else
             {
                 _keyDictionary.Add(control,
-                    new Tuple<List<Keys>, List<Tuple<Control, int>>>(new List<Keys>(), new List<Tuple<Control, int>>()));
-                _keyDictionary[control].Item2.Add(new Tuple<Control, int>(gtaControl, controlIndex));
+                    new Tuple<List<Keys>, List<Tuple<GameControl, int>>>(new List<Keys>(), new List<Tuple<GameControl, int>>()));
+                _keyDictionary[control].Item2.Add(new Tuple<GameControl, int>(gtaControl, controlIndex));
             }
 
         }
@@ -991,11 +992,11 @@ namespace RAGENativeUI
         public bool HasControlJustBeenPressed(Common.MenuControls control, Keys key = Keys.None)
         {
             List<Keys> tmpKeys = new List<Keys>(_keyDictionary[control].Item1);
-            List<Tuple<Control, int>> tmpControls = new List<Tuple<Control, int>>(_keyDictionary[control].Item2);
+            List<Tuple<GameControl, int>> tmpControls = new List<Tuple<GameControl, int>>(_keyDictionary[control].Item2);
 
             if (key != Keys.None)
             {
-                if (tmpKeys.Any(Game.IsKeyPressed))
+                if (tmpKeys.Any(Game.IsKeyDown))
                     return true;
             }
             if (tmpControls.Any(tuple => Game.IsControlJustPressed(tuple.Item2, tuple.Item1)))
@@ -1012,14 +1013,14 @@ namespace RAGENativeUI
         public bool HasControlJustBeenReleaseed(Common.MenuControls control, Keys key = Keys.None)
         {
             List<Keys> tmpKeys = new List<Keys>(_keyDictionary[control].Item1);
-            List<Tuple<Control, int>> tmpControls = new List<Tuple<Control, int>>(_keyDictionary[control].Item2);
+            List<Tuple<GameControl, int>> tmpControls = new List<Tuple<GameControl, int>>(_keyDictionary[control].Item2);
 
             if (key != Keys.None)
             {
-                if (tmpKeys.Any(Game.IsKeyPressed))
+                if (tmpKeys.Any(Game.IsKeyDown))
                     return true;
             }
-            if (tmpControls.Any(tuple => Game.IsControlJustReleased(tuple.Item2, tuple.Item1)))
+            if (tmpControls.Any(tuple => Game.IsControlJustReleased(tuple.Item2, tuple.Item1) || Common.IsDisabledControlJustReleased(tuple.Item2, tuple.Item1)))
                 return true;
             return false;
         }
@@ -1034,7 +1035,7 @@ namespace RAGENativeUI
         public bool IsControlBeingPressed(Common.MenuControls control, Keys key = Keys.None)
         {
             List<Keys> tmpKeys = new List<Keys>(_keyDictionary[control].Item1);
-            List<Tuple<Control, int>> tmpControls = new List<Tuple<Control, int>>(_keyDictionary[control].Item2);
+            List<Tuple<GameControl, int>> tmpControls = new List<Tuple<GameControl, int>>(_keyDictionary[control].Item2);
             if (HasControlJustBeenReleaseed(control, key)) _controlCounter = 0;
             if (_controlCounter > 0)
             {
@@ -1045,13 +1046,13 @@ namespace RAGENativeUI
             }
             if (key != Keys.None)
             {
-                if (tmpKeys.Any(Game.IsKeyPressed))
+                if (tmpKeys.Any(Game.IsKeyDown))
                 {
                     _controlCounter = 1;
                     return true;
                 }
             }
-            if (tmpControls.Any(tuple => Game.IsControlPressed(tuple.Item2, tuple.Item1)))
+            if (tmpControls.Any(tuple => Game.IsControlPressed(tuple.Item2, tuple.Item1) || Common.IsDisabledControlPressed(tuple.Item2, tuple.Item1)))
             {
                 _controlCounter = 1;
                 return true;
@@ -1078,7 +1079,7 @@ namespace RAGENativeUI
             if (MenuItems.Count == 0) return;
             if (IsControlBeingPressed(Common.MenuControls.Up, key))
             {
-                if (Size > MaxItemsOnScreen + 1)
+                if (MenuItems.Count > MaxItemsOnScreen + 1)
                     GoUpOverflow();
                 else
                     GoUp();
@@ -1087,7 +1088,7 @@ namespace RAGENativeUI
 
             else if (IsControlBeingPressed(Common.MenuControls.Down, key))
             {
-                if (Size > MaxItemsOnScreen + 1)
+                if (MenuItems.Count > MaxItemsOnScreen + 1)
                     GoDownOverflow();
                 else
                     GoDown();
@@ -1174,10 +1175,10 @@ namespace RAGENativeUI
             _instructionalButtonsScaleform.CallFunction("CLEAR_ALL");
             _instructionalButtonsScaleform.CallFunction("TOGGLE_MOUSE_BUTTONS", 0);
             _instructionalButtonsScaleform.CallFunction("CREATE_CONTAINER");
-            
 
-            _instructionalButtonsScaleform.CallFunction("SET_DATA_SLOT", 0, NativeFunction.CallByHash<uint>(0x0499D7B09FC9B407, 2, (int)Control.PhoneSelect, 0), "Select");
-            _instructionalButtonsScaleform.CallFunction("SET_DATA_SLOT", 1, NativeFunction.CallByHash<uint>(0x0499D7B09FC9B407, 2, (int)Control.PhoneCancel, 0), "Back");
+
+            _instructionalButtonsScaleform.CallFunction("SET_DATA_SLOT", 0, (string)NativeFunction.CallByHash(0x0499d7b09fc9b407, typeof(string), 2, (int)GameControl.CellphoneSelect, 0), "Select");
+            _instructionalButtonsScaleform.CallFunction("SET_DATA_SLOT", 1, (string)NativeFunction.CallByHash(0x0499d7b09fc9b407, typeof(string), 2, (int)GameControl.CellphoneCancel, 0), "Back");
             int count = 2;
             foreach (var button in _instructionalButtons.Where(button => button.ItemBind == null || MenuItems[CurrentSelection] == button.ItemBind))
             {
@@ -1201,7 +1202,7 @@ namespace RAGENativeUI
                 if (ParentMenu != null || !value) return;
                 if (!ResetCursorOnOpen) return;
                 Cursor.Position = new Point(Screen.PrimaryScreen.Bounds.Width/2, Screen.PrimaryScreen.Bounds.Height/2);
-                NativeFunction.CallByHash<uint>(0x8DB8CFFD58B62552, 1);
+                NativeFunction.CallByHash<uint>(0x8db8cffd58b62552, 1);
             }
         }
 
@@ -1232,22 +1233,22 @@ namespace RAGENativeUI
         /// <summary>
         /// Returns false if last input was made with mouse and keyboard, true if it was made with a controller.
         /// </summary>
-        public static bool IsUsingController = !NativeFunction.CallByHash<bool>(0xA571D46727E2B718, 2);
+        public static bool IsUsingController = !NativeFunction.CallByHash<bool>(0xa571d46727e2b718, 2);
 
         /// <summary>
         /// Returns the amount of items in the menu.
-        /// </summary>
-        public int Size = MenuItems.Count;
+        ///// </summary>
+        //public int Size = MenuItems.Count;
 
         /// <summary>
         /// Returns the title object.
         /// </summary>
-        public ResText Title { get; }
+        public ResText Title { get; private set; }
 
         /// <summary>
         /// Returns the subtitle object.
         /// </summary>
-        public ResText Subtitle { get; }
+        public ResText Subtitle { get; private set; }
 
         /// <summary>
         /// String to pre-attach to the counter string. Useful for color codes.
