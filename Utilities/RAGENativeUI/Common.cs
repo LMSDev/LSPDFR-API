@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System;
+using Rage;
+using Rage.Native;
 
 namespace RAGENativeUI
 {
@@ -25,6 +23,30 @@ namespace RAGENativeUI
             Right,
             Select,
             Back
+        }
+
+
+        public static void PlaySound(string soundFile, string soundSet)
+        {
+            NativeFunction.CallByName<uint>("PLAY_SOUND_FRONTEND", -1, soundFile, soundSet, false);
+        }
+
+
+        public static bool IsDisabledControlPressed(int index, GameControl control)
+        {
+            return NativeFunction.CallByName<bool>("IS_DISABLED_CONTROL_PRESSED", index, (int)control);
+        }
+
+
+        public static bool IsDisabledControlJustPressed(int index, GameControl control)
+        {
+            return NativeFunction.CallByName<bool>("IS_DISABLED_CONTROL_JUST_PRESSED", index, (int)control);
+        }
+
+
+        public static bool IsDisabledControlJustReleased(int index, GameControl control)
+        {
+            return NativeFunction.CallByName<bool>("IS_DISABLED_CONTROL_JUST_RELEASED", index, (int)control);
         }
     }
 }
