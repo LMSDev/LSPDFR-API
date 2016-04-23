@@ -1,5 +1,6 @@
 public static class IsKeyDownWithComputerCheck 
 {
+        //Call this instead of Game.IsKeyDown
         public static bool IsKeyDownComputerCheck(Keys KeyPressed)
         {
 
@@ -13,10 +14,9 @@ public static class IsKeyDownWithComputerCheck
             {
                 return false;
             }
-
-
-
         }
+        
+        //Call this instead of Game.IsKeyDownRightNow
         public static bool IsKeyDownRightNowComputerCheck(Keys KeyPressed)
         {
 
@@ -29,8 +29,5 @@ public static class IsKeyDownWithComputerCheck
             {
                 return false;
             }
-
-
-
         }
 }      
